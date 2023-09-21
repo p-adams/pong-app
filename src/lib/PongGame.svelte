@@ -2,14 +2,13 @@
   import { afterUpdate, onMount } from "svelte";
   const [width, height] = [600, 350];
   const [paddleWidth, paddleHeight] = [25, 75];
-  const [netWidth, netHeight] = [25, 350];
-
+  const margin = 20;
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
 
-  $: leftPaddleX = 0;
+  $: leftPaddleX = margin;
   $: leftPaddleY = (height - paddleHeight) / 2;
-  $: rightPaddleX = width - paddleWidth;
+  $: rightPaddleX = width - paddleWidth - margin;
   $: rightPaddleY = (height - paddleHeight) / 2;
 
   $: leftPaddle = {
@@ -31,7 +30,7 @@
     draw: () => {
       ctx.save();
       ctx.beginPath();
-      ctx.rect(rightPaddle.x, leftPaddle.y, paddleWidth, paddleHeight);
+      ctx.rect(rightPaddle.x, rightPaddle.y, paddleWidth, paddleHeight);
       ctx.fillStyle = "white";
       ctx.fill();
       ctx.closePath();
@@ -69,9 +68,27 @@
   afterUpdate(() => {
     renderGame();
   });
+
+  function handlePaddleMove(e: any) {
+    // TODO: move player selected paddle instad of hardcoded rightPaddleY
+    if (e.keyCode === 38 && rightPaddleY > margin) {
+      rightPaddleY -= 10;
+    } else if (
+      e.keyCode === 40 &&
+      rightPaddleY < height - paddleHeight - margin
+    ) {
+      rightPaddleY += 10;
+    }
+  }
 </script>
 
-<canvas {width} {height} bind:this={canvas} />
+<canvas
+  tabindex="0"
+  {width}
+  {height}
+  bind:this={canvas}
+  on:keyup={(e) => handlePaddleMove(e)}
+/>
 
 <style>
   canvas {
