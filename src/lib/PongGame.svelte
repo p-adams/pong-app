@@ -75,6 +75,7 @@
 
   onMount(() => {
     ctx = canvas.getContext("2d")!;
+    canvas.focus();
     renderGame();
   });
 
@@ -82,11 +83,15 @@
     renderGame();
   });
 
-  function handlePaddleMove(e: any) {
-    if (e.keyCode === 38 && rightPaddleY > margin) {
+  function handlePaddleMove(
+    e: KeyboardEvent & {
+      currentTarget: EventTarget & HTMLCanvasElement;
+    }
+  ) {
+    if (e.key === "ArrowUp" && rightPaddleY > margin) {
       rightPaddleY -= 10;
     } else if (
-      e.keyCode === 40 &&
+      e.key === "ArrowDown" &&
       rightPaddleY < height - paddleHeight - margin
     ) {
       rightPaddleY += 10;
@@ -117,7 +122,6 @@
     color: white;
   }
   canvas {
-    z-index: 1;
     outline: 1px solid lightgray;
     background-color: #444;
   }
