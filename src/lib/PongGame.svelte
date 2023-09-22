@@ -5,7 +5,8 @@
   const margin = 20;
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
-
+  let leftScore = 0;
+  let rightScore = 0;
   $: leftPaddleX = margin;
   $: leftPaddleY = (height - paddleHeight) / 2;
   $: rightPaddleX = width - paddleWidth - margin;
@@ -53,11 +54,23 @@
     },
   };
 
+  $: ball = {
+    radius: 10,
+    draw: () => {
+      ctx.beginPath();
+      ctx.arc(10, 10, ball.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "white";
+      ctx.fill();
+      ctx.closePath();
+    },
+  };
+
   function renderGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     net.draw();
     leftPaddle.draw();
     rightPaddle.draw();
+    ball.draw();
   }
 
   onMount(() => {
@@ -70,7 +83,6 @@
   });
 
   function handlePaddleMove(e: any) {
-    // TODO: move player selected paddle instad of hardcoded rightPaddleY
     if (e.keyCode === 38 && rightPaddleY > margin) {
       rightPaddleY -= 10;
     } else if (
@@ -82,6 +94,10 @@
   }
 </script>
 
+<div class="score--outer">
+  <div id="left-score">{leftScore}</div>
+  <div id="right-score">{rightScore}</div>
+</div>
 <canvas
   tabindex="0"
   {width}
@@ -91,7 +107,17 @@
 />
 
 <style>
+  .score--outer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background-color: #444;
+  }
+  .score--outer div {
+    font-size: x-large;
+    color: white;
+  }
   canvas {
+    z-index: 1;
     outline: 1px solid lightgray;
     background-color: #444;
   }
