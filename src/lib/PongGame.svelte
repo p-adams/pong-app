@@ -3,14 +3,18 @@
   const [width, height] = [600, 350];
   const [paddleWidth, paddleHeight] = [25, 75];
   const margin = 20;
+  const leftPaddleSpeed = 2;
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
   let leftScore = 0;
   let rightScore = 0;
+  let leftPaddleDirection = 1; // 1 for moving down, -1 for moving up
+
   $: leftPaddleX = margin;
   $: leftPaddleY = (height - paddleHeight) / 2;
   $: rightPaddleX = width - paddleWidth - margin;
   $: rightPaddleY = (height - paddleHeight) / 2;
+  $: bottom = height - paddleHeight - margin;
 
   $: leftPaddle = {
     x: leftPaddleX,
@@ -73,16 +77,6 @@
     ball.draw();
   }
 
-  onMount(() => {
-    ctx = canvas.getContext("2d")!;
-    canvas.focus();
-    renderGame();
-  });
-
-  afterUpdate(() => {
-    renderGame();
-  });
-
   function handlePaddleMove(
     e: KeyboardEvent & {
       currentTarget: EventTarget & HTMLCanvasElement;
@@ -97,8 +91,30 @@
       rightPaddleY += 10;
     }
   }
+
+  function paddleLeftMove() {
+    const leftPaddleTop = leftPaddleY + margin;
+    const leftPaddleBottom = leftPaddleY - margin;
+    // Reverse direction if the paddle reaches the top or bottom
+    if (leftPaddleTop <= margin || leftPaddleBottom >= bottom) {
+      leftPaddleDirection *= -1;
+    }
+    // Update leftPaddleY based on direction
+    leftPaddleY += leftPaddleSpeed * leftPaddleDirection;
+  }
+
+  onMount(() => {
+    ctx = canvas.getContext("2d")!;
+    canvas.focus();
+    renderGame();
+  });
+
+  afterUpdate(() => {
+    requestAnimationFrame(renderGame);
+  });
 </script>
 
+{leftPaddleY} - {bottom}
 <div class="score--outer">
   <div id="left-score">{leftScore}</div>
   <div id="right-score">{rightScore}</div>
