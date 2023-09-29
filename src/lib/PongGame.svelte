@@ -3,7 +3,8 @@
   const [width, height] = [600, 350];
   const [paddleWidth, paddleHeight] = [25, 75];
   const margin = 20;
-  const leftPaddleSpeed = 2;
+  const leftPaddleSpeed = 6;
+  const rightPaddleSpeed = 50;
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
   let leftScore = 0;
@@ -27,6 +28,7 @@
       ctx.fill();
       ctx.closePath();
       ctx.restore();
+      paddleLeftMove();
     },
   };
   $: rightPaddle = {
@@ -75,6 +77,7 @@
     leftPaddle.draw();
     rightPaddle.draw();
     ball.draw();
+    requestAnimationFrame(renderGame);
   }
 
   function handlePaddleMove(
@@ -83,12 +86,12 @@
     }
   ) {
     if (e.key === "ArrowUp" && rightPaddleY > margin) {
-      rightPaddleY -= 10;
+      rightPaddleY -= rightPaddleSpeed;
     } else if (
       e.key === "ArrowDown" &&
       rightPaddleY < height - paddleHeight - margin
     ) {
-      rightPaddleY += 10;
+      rightPaddleY += rightPaddleSpeed;
     }
   }
 
@@ -108,13 +111,8 @@
     canvas.focus();
     renderGame();
   });
-
-  afterUpdate(() => {
-    requestAnimationFrame(renderGame);
-  });
 </script>
 
-{leftPaddleY} - {bottom}
 <div class="score--outer">
   <div id="left-score">{leftScore}</div>
   <div id="right-score">{rightScore}</div>
