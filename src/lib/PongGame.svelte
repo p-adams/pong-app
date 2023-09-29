@@ -122,7 +122,7 @@
   {width}
   {height}
   bind:this={canvas}
-  on:keyup={(e) => handlePaddleMove(e)}
+  on:keydown={(e) => handlePaddleMove(e)}
 />
 
 <style>
