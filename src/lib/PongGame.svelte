@@ -5,17 +5,20 @@
   const margin = 20;
   const leftPaddleSpeed = 6;
   const rightPaddleSpeed = 50;
+  const ballSpeed = 10;
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
   let leftScore = 0;
   let rightScore = 0;
   let leftPaddleDirection = 1; // 1 for moving down, -1 for moving up
-
+  let ballDirection = 1;
   $: leftPaddleX = margin;
   $: leftPaddleY = (height - paddleHeight) / 2;
   $: rightPaddleX = width - paddleWidth - margin;
   $: rightPaddleY = (height - paddleHeight) / 2;
   $: bottom = height - paddleHeight - margin;
+  $: ballX = 10;
+  $: ballY = height / 2;
 
   $: leftPaddle = {
     x: leftPaddleX,
@@ -62,12 +65,15 @@
 
   $: ball = {
     radius: 10,
+    x: ballX,
+    y: ballY,
     draw: () => {
       ctx.beginPath();
-      ctx.arc(10, 10, ball.radius, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
       ctx.fillStyle = "white";
       ctx.fill();
       ctx.closePath();
+      ballMove();
     },
   };
 
@@ -93,6 +99,21 @@
     ) {
       rightPaddleY += rightPaddleSpeed;
     }
+  }
+
+  function ballMove() {
+    // Check if the ball hits the right boundary
+    if (ballX + ball.radius >= width - margin) {
+      ballDirection = -1; // Reverse the direction
+    }
+
+    // Check if the ball hits the left boundary
+    if (ballX - ball.radius <= margin) {
+      ballDirection = 1; // Reverse the direction
+    }
+
+    // Update the ball's position based on direction
+    ballX += ballSpeed * ballDirection;
   }
 
   function paddleLeftMove() {
