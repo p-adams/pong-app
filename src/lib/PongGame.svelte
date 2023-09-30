@@ -5,20 +5,23 @@
   const margin = 20;
   const leftPaddleSpeed = 6;
   const rightPaddleSpeed = 50;
-  const ballSpeed = 10;
+  const ballSpeed = 4;
+  const SCORE = 3;
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
   let leftScore = 0;
   let rightScore = 0;
   let leftPaddleDirection = 1; // 1 for moving down, -1 for moving up
-  let ballDirection = 1;
+  let ballDirectionX = 1; // 1 for moving right, -1 for moving left
+  let ballDirectionY = 1; // 1 for moving down, -1 for moving up
   $: leftPaddleX = margin;
   $: leftPaddleY = (height - paddleHeight) / 2;
   $: rightPaddleX = width - paddleWidth - margin;
   $: rightPaddleY = (height - paddleHeight) / 2;
   $: bottom = height - paddleHeight - margin;
-  $: ballX = 10;
+  $: ballX = height / 2;
   $: ballY = height / 2;
+  $: hasWinner = leftScore === SCORE || rightScore === SCORE;
 
   $: leftPaddle = {
     x: leftPaddleX,
@@ -83,7 +86,9 @@
     leftPaddle.draw();
     rightPaddle.draw();
     ball.draw();
-    requestAnimationFrame(renderGame);
+    if (!hasWinner) {
+      requestAnimationFrame(renderGame);
+    }
   }
 
   function handlePaddleMove(
@@ -102,18 +107,64 @@
   }
 
   function ballMove() {
+    // Update the ball's position based on direction
+    ballX += ballSpeed * ballDirectionX;
+    ballY += ballSpeed * ballDirectionY;
+
     // Check if the ball hits the right boundary
     if (ballX + ball.radius >= width - margin) {
-      ballDirection = -1; // Reverse the direction
+      ballDirectionX = -1; // Reverse the X direction
     }
 
     // Check if the ball hits the left boundary
     if (ballX - ball.radius <= margin) {
-      ballDirection = 1; // Reverse the direction
+      ballDirectionX = 1; // Reverse the X direction
     }
 
-    // Update the ball's position based on direction
-    ballX += ballSpeed * ballDirection;
+    // Check if the ball hits the top or bottom boundary
+    if (
+      ballY - ball.radius <= margin ||
+      ballY + ball.radius >= height - margin
+    ) {
+      ballDirectionY *= -1; // Reverse the Y direction
+    }
+
+    // Check for collision with left paddle
+    if (
+      ballX - ball.radius <= leftPaddle.x + paddleWidth &&
+      ballY >= leftPaddle.y &&
+      ballY <= leftPaddle.y + paddleHeight
+    ) {
+      ballDirectionX = 1; // Reverse the X direction
+    }
+
+    // Check for collision with right paddle
+    if (
+      ballX + ball.radius >= rightPaddle.x &&
+      ballY >= rightPaddle.y &&
+      ballY <= rightPaddle.y + paddleHeight
+    ) {
+      ballDirectionX = -1; // Reverse the X direction
+    }
+    // Check if the ball goes past the left paddle (right player scores)
+    if (ballX - ball.radius <= margin) {
+      rightScore++;
+      // Reset the ball's position to the center
+      ballX = width / 2;
+      ballY = height / 2;
+      ballDirectionX = 1; // Start the ball moving to the right
+      ballDirectionY = 1; // Start the ball moving down
+    }
+
+    // Check if the ball goes past the right paddle (left player scores)
+    if (ballX + ball.radius >= width - margin) {
+      leftScore++;
+      // Reset the ball's position to the center
+      ballX = width / 2;
+      ballY = height / 2;
+      ballDirectionX = -1; // Start the ball moving to the left
+      ballDirectionY = 1; // Start the ball moving down
+    }
   }
 
   function paddleLeftMove() {
@@ -135,8 +186,12 @@
 </script>
 
 <div class="score--outer">
-  <div id="left-score">{leftScore}</div>
-  <div id="right-score">{rightScore}</div>
+  <div class={`left-score ${leftScore === SCORE ? "win" : ""}`}>
+    {leftScore}
+  </div>
+  <div class={`right-score ${rightScore === SCORE ? "win" : ""}`}>
+    {rightScore}
+  </div>
 </div>
 <canvas
   tabindex="0"
@@ -159,5 +214,14 @@
   canvas {
     outline: 1px solid lightgray;
     background-color: #444;
+  }
+  .left-score.win::after {
+    content: "Left Player Wins!";
+    margin-left: 10px;
+  }
+
+  .right-score.win::after {
+    content: "Right Player Wins!";
+    margin-left: 10px;
   }
 </style>
